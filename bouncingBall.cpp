@@ -8,6 +8,8 @@
 #include <GL/glut.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
+#include <math.h>
+#include <string.h>
 
 void drawBounce();
 void drawGrid();
@@ -25,30 +27,28 @@ const int MINIMUM_SPEED = 1;  //smallest velocity achievable by ball
 const int MAXIMUM_SPEED = 10; //largest velocity achievable by ball
 
 
-/*
- * Rectangle
- */
 typedef struct
 {
     GLfloat x, y, velX, velY, radius, color1, color2, color3; 
 } BBall;
 
 //creates the properties of our ball objects and sets up window color
-void SetupRC()
-{
+void SetupRC(){
     /* Set the background color */
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     
+      /* Clear our model view Matrix */
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
     
-    
-    
-    
+    //create the ball objects
+   
 }
 
 /*
  * Draw reference grid.
  */
-void drawGrid()
+   void drawGrid()
 {
     GLfloat shade = 0.2f;
     GLfloat xmax = WORLD_SIZE, ymax = WORLD_SIZE, x, y;
@@ -65,19 +65,19 @@ void drawGrid()
         glBegin(GL_LINES);
             glVertex2f(x, -ymax);
             glVertex2f(x, ymax);
-		glEnd();
+	glEnd();
     }
     for (y=0; y<=ymax; y+=GRID_SIZE) {
-		glBegin(GL_LINES);
+	glBegin(GL_LINES);
             glVertex2f(-xmax, y);
             glVertex2f(xmax, y);
-		glEnd();
+	glEnd();
     }
     for (y=-GRID_SIZE; y>=-ymax; y-=GRID_SIZE) {
-		glBegin(GL_LINES);
+	glBegin(GL_LINES);
             glVertex2f(-xmax, y);
             glVertex2f(xmax, y);
-		glEnd();
+	glEnd();
     }
 }
 
@@ -97,7 +97,8 @@ void RenderScene()
 
     /* Draw the object(s) */
     drawBounce();
-
+    glFlush();
+    
     /* Throw everything the above methods draw onto the screen */
     glutSwapBuffers();
 }
@@ -108,15 +109,16 @@ void RenderScene()
  */
 void ChangeSize(GLsizei w, GLsizei h)
 {
-    GLfloat aspectRatioV;      /* Viewport aspect ratio */
-    GLfloat aspectRatioM;      /* Model/world aspect ratio */
-    GLdouble factor = 1.2;
-    GLdouble xmin, xmax, ymin, ymax, xc, yc, dx, dy;
+     GLfloat aspectRatio;
+    GLfloat factor = 1.0; //scales the world to a 1-1 relation with the window
+    GLfloat dimension = WORLD_SIZE * factor;
 
+    
     /* Prevent a divide by zero, when window is too short you cant make a window of zero width) */
-    if(h == 0)
-	h = 1;
-
+    if (h == 0){
+		h = 1;
+    }
+    
     /* Set the viewport to be the entire window */
     glViewport(0, 0, w, h);
 
@@ -124,32 +126,20 @@ void ChangeSize(GLsizei w, GLsizei h)
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
 
-    /* Get some dimensions */
-    //xc = rectangle.x + rectangle.w / 2.0;
-    //yc = rectangle.y + rectangle.h / 2.0;
-    //dx = rectangle.w * factor;
-    //dy = rectangle.h * factor;
+    /* Calculate the aspect ratio of the window */
+    aspectRatio = (GLfloat)w / (GLfloat)h;
 
-    /* Calculate the aspect ratio of the viewport */
-    aspectRatioV = (GLfloat)w / (GLfloat)h;
-
-    /* Calculate the aspect ratio of the model world */
-    aspectRatioM = dx / dy;
-
-    /* Avoid distortion  */
-    if (aspectRatioV < aspectRatioM) {
-	dy = dx / aspectRatioV;
+    if (w <= h){
+		glOrtho(-dimension, dimension,
+			    -dimension/aspectRatio, dimension/aspectRatio, 1.0, -1.0);
     }
-    else if (aspectRatioV > aspectRatioM) {
-	dx = dy * aspectRatioV;
+    else{
+		glOrtho(-dimension*aspectRatio, dimension*aspectRatio,
+				-dimension, dimension, 1.0, -1.0);
     }
-    dy /= 2.0;
-    dx /= 2.0;
-    xmin = xc - dx;
-    xmax = xc + dx;
-    ymin = yc - dy;
-    ymax = yc + dy;
-    glOrtho(xmin, xmax, ymin, ymax, 1.0, -1.0);
+    /* Reset the matrix stack */
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
 }
 
 // sets up our window and begins GLUT main
