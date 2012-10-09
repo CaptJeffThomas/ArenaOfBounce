@@ -222,12 +222,60 @@ void wallBounce(int i){
     }
 }
 
-void bounce(int i, int j){
+void bounce(int i, int j){ 
     
+    // calculate delta
+float dX = balls[i].x - balls[j].x;
+float dY = balls[i].y - balls[j].y;
+
+//normalize above delta
+float normalDX = dX / sqrt(pow(dX, 2) + pow(dY, 2));
+float normalDY = dY / sqrt(pow(dX, 2) + pow(dY, 2));
+
+// Calculate dot product and get each magnitude
+float magI = (balls[i].velX * normalDX) + (balls[i].velY * normalDY);
+float magJ = (balls[j].velX * normalDX) + (balls[j].velY * normalDY);
+
+//apply new magnitude to velocities
+balls[i].velX += (magJ - magI) * dX;
+balls[i].velY += (magJ - magI) * dY;
+balls[j].velX += (magI - magJ) * dX;
+balls[j].velY += (magI - magJ) * dY; 
+
+//keep velocities within designated MAX-MIN boundaries
+if(balls[i].velX > MAXIMUM_SPEED){
+    balls[i].velX = MAXIMUM_SPEED;
 }
+if(balls[i].velX < MINIMUM_SPEED){
+    balls[i].velX = MINIMUM_SPEED;
+}
+if(balls[i].velY > MAXIMUM_SPEED){
+    balls[i].velY = MAXIMUM_SPEED;
+}
+if(balls[i].velY < MINIMUM_SPEED){
+    balls[i].velY = MINIMUM_SPEED;
+}
+
+
+if(balls[j].velY > MAXIMUM_SPEED){
+    balls[j].velY = MAXIMUM_SPEED;
+}
+if(balls[j].velY < MINIMUM_SPEED){
+    balls[j].velY = MINIMUM_SPEED;
+}
+if(balls[j].velX > MAXIMUM_SPEED){
+    balls[j].velX = MAXIMUM_SPEED;
+}
+if(balls[j].velX < MINIMUM_SPEED){
+    balls[j].velX = MINIMUM_SPEED;
+}
+
+}
+
 
 // our function that is called constantly by glutMain to draw our scene
 void RenderScene(){
+    
       /* Clear the background */
     glClear(GL_COLOR_BUFFER_BIT);
 
@@ -235,12 +283,13 @@ void RenderScene(){
     drawGrid();
 
     /* Draw the object(s) */
-    /drawBounce();
+    drawBounce();
     glFlush();
     
     /* Throw everything the above methods draw onto the screen */
     glutSwapBuffers();
 }
+
 
 /*
  * Resizes the windows
