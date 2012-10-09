@@ -11,17 +11,7 @@
 #include <math.h>
 #include <string.h>
 #include <time.h>
-
-void drawBounce();
-void drawGrid();
-void RenderScene();
-void SetupRC();
-void ChangeSize(GLsizei w, GLsizei h);
-void drawBall();
-bool collides(int i, int j); 
-void bounce(int i, int j);
-void wallBounce(int i);
-void newPosition(int i);
+#include <cstdio>
      
 const int WINDOW_SIZE = 800; // default size of window
 const int WORLD_SIZE = 1000; // the initial and minimum size of our world
@@ -39,12 +29,23 @@ typedef struct {
 
 BBall balls[NUM_BALLS];
 
+void drawBounce();
+void drawGrid();
+void RenderScene();
+void SetupRC();
+void ChangeSize(GLsizei w, GLsizei h);
+void drawBall(BBall ball);
+bool collides(int i, int j); 
+void bounce(int i, int j);
+void wallBounce(int i);
+void newPosition(int i);
+
 //creates the properties of our ball objects and clears our canvas for painting
 void SetupRC(){
     
     /* Set the background color */
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glDisable(GL_DEPTH_TEST)
+    glDisable(GL_DEPTH_TEST);
     
       /* Clear our model view Matrix */
     glMatrixMode(GL_MODELVIEW);
@@ -55,9 +56,9 @@ void SetupRC(){
     //create the ball objects and provides their random properties
     for(int i = 0; i < NUM_BALLS ; i++){
         
-        balls[i].color1 = (rand()%101)/100;  //creates random color values between 0.00 - 1.00
-        balls[i].color2 = (rand()%101)/100;
-        balls[i].color3 = (rand()%101)/100;
+        balls[i].color1 = (float)(rand()%101)/100;  //creates random color values between 0.00 - 1.00
+        balls[i].color2 = (float)(rand()%101)/100;
+        balls[i].color3 = (float)(rand()%101)/100;
         balls[i].radius = (rand()%(MAXIMUM_RADIUS - MINIMUM_RADIUS + 1) + MINIMUM_RADIUS); //sets a random radius within interval
         balls[i].velX = (rand()%(MAXIMUM_SPEED - MINIMUM_SPEED + 1) + MINIMUM_SPEED); //sets a random speed within interval
         balls[i].velY = (rand()%(MAXIMUM_SPEED - MINIMUM_SPEED +1) + MINIMUM_SPEED);
@@ -76,27 +77,38 @@ void SetupRC(){
 
 // creates a random centre for our Ball between  -WORLD_SIZE and +WORLD_SIZE 
 void newPosition(int i){
-    int posX = rand()% (2 * WORLD_SIZE + 1) - WORLD_SIZE;
-    int posY = rand()% (2 * WORLD_SIZE + 1) - WORLD_SIZE;
+    int posX = (rand()% (2 * WORLD_SIZE + 1)) - WORLD_SIZE;
+    int posY = (rand()% (2 * WORLD_SIZE + 1)) - WORLD_SIZE;
     
     // if our randomized position is too close to the right wall
     if (posX > (WORLD_SIZE - balls[i].radius)){
         balls[i].x = posX - (posX - (WORLD_SIZE - balls[i].radius));
+    }
+    else{
+        balls[i].x = posX;
     }
     
     //if randomized position is too close to the left wall
     if (posX < (-1 * WORLD_SIZE + balls[i].radius)){
         balls[i].x = posX + (posX + (WORLD_SIZE - balls[i].radius));
     }
-    
+    else {
+        balls[i].x = posX;
+    }
      //if randomized position is too close to the top wall
     if (posY > (WORLD_SIZE - balls[i].radius)){
         balls[i].y = posY - (posY - (WORLD_SIZE - balls[i].radius));
+    }
+    else {
+        balls[i].y = posY;
     }
     
      //if randomized position is too close to the bottom wall
     if (posY < (-1 * WORLD_SIZE + balls[i].radius)){
         balls[i].y = posY + (posY + (WORLD_SIZE - balls[i].radius));
+    }
+    else {
+        balls[i].y = posY;
     }
     
 }
@@ -148,7 +160,7 @@ void drawBounce(){
     //then we check for collisions and resolve them
     for (int i = 0; i < NUM_BALLS; i++){ 
         for (int j = i + 1; j < NUM_BALLS; j++){  
-                if (collides(balls[i], balls[j])){
+                if (collides(i, j)){
                         bounce(i, j);
                 }
          }
@@ -210,7 +222,7 @@ void wallBounce(int i){
     }
 }
 
-void bounce(BBall one, BBall two){
+void bounce(int i, int j){
     
 }
 
@@ -223,7 +235,7 @@ void RenderScene(){
     drawGrid();
 
     /* Draw the object(s) */
-    drawBounce();
+    /drawBounce();
     glFlush();
     
     /* Throw everything the above methods draw onto the screen */
